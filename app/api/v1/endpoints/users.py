@@ -39,3 +39,20 @@ def user_login(user:schemas.userLogin, db:Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Invalid credentials")
     token_data = auth.create_access_token({"sub": db_user.email})
     return {"access_token": token_data, "token_type": "bearer"}
+
+# get all users
+@router.get("/users", response_model=list[schemas.UserShow], tags=["User"])
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(models.User).all()
+    return users
+
+# user delete
+@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["User"])
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    db.delete(user)
+    db.commit()
+    return {"detail": "User deleted successfully"}
+
