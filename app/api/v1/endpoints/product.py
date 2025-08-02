@@ -29,9 +29,14 @@ def get_categories(db:Session = Depends(get_db)):
     return categories
 
 # Create product endpoint
-@router.post("/product", response_model=schemas.ProductOut, status_code=status.HTTP_201_CREATED, tags=["Product"])
+@router.post("/products", response_model=schemas.ProductOut, status_code=status.HTTP_201_CREATED, tags=["Product"])
 def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)):
+    print(product)
     db_product = models.Product(
+        product_code=product.product_code,
+        image=product.image,
+        in_stock=product.in_stock,
+        is_active=product.is_active,
         name=product.name,
         description=product.description,
         price=product.price,
@@ -43,29 +48,55 @@ def create_product(product: schemas.ProductCreate, db: Session = Depends(get_db)
     return db_product
 
 # Get all products with pagination filtering and sorting search
-@router.get("/product", response_model=List[schemas.ProductOut], tags=["Product"])
+@router.get("/products", response_model=schemas.ProductListResponse, tags=["Product"])
 def get_products(
     db: Session = Depends(get_db),
     skip: int = 0,
     limit: int = 10,
-    search:Optional[str] = Query(None, min_length=3, max_length=50),
+    search:Optional[str] = Query(None , description="Search by product name"),
     sort_by: Optional[str] = Query("id"),
     order_by: Optional[str] = Query("asc"),
-    category_id: Optional[int] = Query(None, description="Filter by category ID")
-
+    category_id: Optional[int] = Query(None, description="Filter by category ID"),
+    
 ):
-    query = db.query(models.Product)
-    if search:
-        query = query.filter(models.Product.name.ilike(f"%{search}%"))
-    if category_id:
+   query = db.query(models.Product)
+   # Apply search filter
+   if search:
+       query = query.filter(models.Product.name.ilike(f"%{search}%"))
+
+    # Apply category filter
+   if category_id:
         query = query.filter(models.Product.category_id == category_id)
-    if sort_by:
+
+    # Calculate total count AFTER filter
+   total_count = query.count()
+
+    # Sorting
+   if sort_by:
         if order_by == "desc":
             query = query.order_by(getattr(models.Product, sort_by).desc())
         else:
             query = query.order_by(getattr(models.Product, sort_by).asc())
-    else:
-        query = query.order_by(getattr(models.Product,sort_by))
 
-    products = query.offset(skip).limit(limit).all()
-    return products
+    # Pagination
+   products = query.offset(skip).limit(limit).all()
+
+    # Total pages calculation
+   total_pages = (total_count + limit - 1) // limit
+
+   return {
+        "products": products,
+        "totalPages": total_pages,
+        "totalCount": total_count,
+        "currentPage": (skip // limit) + 1
+    }
+
+# product delete endpoint
+@router.delete("/products/{product_id}", status_code=status.HTTP_204_NO_CONTENT, tags=["Product"])
+def delete_product(product_id: int, db: Session = Depends(get_db)):
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+    db.delete(product)
+    db.commit()
+    return {"detail": "Product deleted successfully"}

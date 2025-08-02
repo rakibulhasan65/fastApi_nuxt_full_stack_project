@@ -2,46 +2,7 @@
   <div class="p-6 max-w-screen mx-auto">
     <h1 class="text-2xl font-bold mb-4 text-gray-800">User Management</h1>
 
-    <!-- <div class="overflow-x-auto">
-      <table
-        class="min-w-full bg-white border border-gray-200 shadow rounded-lg"
-      >
-        <thead>
-          <tr class="bg-gray-100 text-left text-sm font-medium text-gray-700">
-            <th class="px-4 py-2 border-b">ID</th>
-            <th class="px-4 py-2 border-b">Username</th>
-            <th class="px-4 py-2 border-b">Email</th>
-            <th class="px-4 py-2 border-b">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="user in users"
-            :key="user.id"
-            v-if="users.length > 0"
-            class="hover:bg-gray-50 transition duration-150"
-          >
-            <td class="px-4 py-2 border-b">{{ user.id }}</td>
-            <td class="px-4 py-2 border-b">{{ user.username }}</td>
-            <td class="px-4 py-2 border-b">{{ user.email }}</td>
-            <td class="px-4 py-2 border-b space-x-2">
-              <nuxt-link
-                :to="`/admin/users/${user.id}/edit`"
-                class="bg-yellow-500 hover:bg-yellow-600 text-white py-1 px-3 rounded text-sm"
-              >
-                ✏️ Edit
-              </nuxt-link>
-              <button
-                @click="deleteUser(user.id)"
-                class="bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded text-sm"
-              >
-                🗑️ Delete
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div> -->
+   
 
     <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
       <div
